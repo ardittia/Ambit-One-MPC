@@ -1,0 +1,18 @@
+{
+  "name": "ambit-one-mcp",
+  "version": "1.0.0",
+  "description": "MCP Server para Ambit One / PideDirecto API",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "express": "^4.18.2",
+    "zod": "^3.22.4"
+  }
+}
