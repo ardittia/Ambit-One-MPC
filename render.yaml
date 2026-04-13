@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: ambit-one-mcp
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node index.js
+    envVars:
+      - key: AMBIT_ONE_API_KEY
+        sync: false   # Render te pedirá el valor manualmente (más seguro)
+      - key: NODE_VERSION
+        value: "20"
