@@ -331,23 +331,32 @@ app.get("/", (req, res) => {
 app.post("/mcp", async (req, res) => {
   const sessionId = req.headers["mcp-session-id"];
 
-  let transport;
-
+  // Sesión existente — reusar el transporte guardado
   if (sessionId && transports.has(sessionId)) {
-    transport = transports.get(sessionId);
-  } else {
-    transport = new StreamableHTTPServerTransport({
-      sessionIdGenerator: () => randomUUID(),
-    });
-    const server = createMcpServer();
-    await server.connect(transport);
-    transport.onclose = () => {
-      if (transport.sessionId) transports.delete(transport.sessionId);
-    };
-    if (transport.sessionId) transports.set(transport.sessionId, transport);
+    const transport = transports.get(sessionId);
+    await transport.handleRequest(req, res, req.body);
+    return;
   }
 
+  // Nueva sesión — crear transporte y servidor frescos
+  const transport = new StreamableHTTPServerTransport({
+    sessionIdGenerator: () => randomUUID(),
+  });
+
+  transport.onclose = () => {
+    if (transport.sessionId) transports.delete(transport.sessionId);
+  };
+
+  const server = createMcpServer();
+  await server.connect(transport);
+
+  // Procesar el request (esto genera transport.sessionId internamente)
   await transport.handleRequest(req, res, req.body);
+
+  // Guardar el transporte DESPUÉS de handleRequest, cuando sessionId ya existe
+  if (transport.sessionId) {
+    transports.set(transport.sessionId, transport);
+  }
 });
 
 // Endpoint MCP — GET para SSE (notificaciones del servidor al cliente)
